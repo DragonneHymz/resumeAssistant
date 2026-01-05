@@ -1,0 +1,50 @@
+[project]
+name = "resume-assistant"
+version = "0.1.0"
+description = "MCP server for resume management, ATS optimization, and PDF generation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Resume Assistant" }
+]
+keywords = ["mcp", "resume", "ats", "pdf", "json-resume"]
+
+dependencies = [
+    "fastmcp>=2.0.0",
+    "pydantic>=2.0.0",
+    "weasyprint>=60.0",
+    "jinja2>=3.0.0",
+    "httpx>=0.25.0",
+    "pdfplumber>=0.10.0",
+    "spacy>=3.7.0",
+    "scikit-learn>=1.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+resume-assistant = "resume_assistant.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/resume_assistant"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

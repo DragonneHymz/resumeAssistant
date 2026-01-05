@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ basics.name }} - Resume</title>
+    <link rel="stylesheet" href="styles/modern.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #333;
+            background: #fff;
+        }
+        
+        .resume {
+            max-width: 8.5in;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2.5fr;
+            min-height: 11in;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(180deg, #1a365d 0%, #2c5282 100%);
+            color: #fff;
+            padding: 30px 20px;
+        }
+        
+        .sidebar h2 {
+            font-size: 11pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+        
+        /* Contact */
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            font-size: 9pt;
+        }
+        
+        .contact-item svg {
+            width: 14px;
+            height: 14px;
+            margin-right: 8px;
+            flex-shrink: 0;
+            fill: #90cdf4;
+        }
+        
+        .contact-item a {
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        /* Skills */
+        .skill-category {
+            margin-bottom: 15px;
+        }
+        
+        .skill-name {
+            font-weight: 600;
+            font-size: 9pt;
+            margin-bottom: 5px;
+        }
+        
+        .skill-keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .skill-keyword {
+            background: rgba(255,255,255,0.15);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 8pt;
+        }
+        
+        /* Languages */
+        .language-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9pt;
+            margin-bottom: 5px;
+        }
+        
+        .language-fluency {
+            opacity: 0.8;
+        }
+        
+        /* Main Content */
+        .main {
+            padding: 30px;
+        }
+        
+        /* Header */
+        .header {
+            margin-bottom: 20px;
+        }
+        
+        .name {
+            font-size: 28pt;
+            font-weight: 700;
+            color: #1a365d;
+            line-height: 1.1;
+        }
+        
+        .label {
+            font-size: 14pt;
+            color: #4a5568;
+            margin-top: 5px;
+        }
+        
+        .summary {
+            margin-top: 15px;
+            color: #4a5568;
+            font-size: 10pt;
+            line-height: 1.6;
+        }
+        
+        /* Sections */
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #1a365d;
+            margin-bottom: 12px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #1a365d;
+        }
+        
+        /* Work Experience */
+        .work-entry {
+            margin-bottom: 18px;
+        }
+        
+        .work-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 3px;
+        }
+        
+        .work-position {
+            font-size: 11pt;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .work-dates {
+            font-size: 9pt;
+            color: #718096;
+        }
+        
+        .work-company {
+            font-size: 10pt;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+        
+        .work-highlights {
+            padding-left: 16px;
+        }
+        
+        .work-highlights li {
+            margin-bottom: 4px;
+            font-size: 9.5pt;
+            color: #4a5568;
+        }
+        
+        /* Education */
+        .edu-entry {
+            margin-bottom: 12px;
+        }
+        
+        .edu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        
+        .edu-degree {
+            font-size: 10pt;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .edu-date {
+            font-size: 9pt;
+            color: #718096;
+        }
+        
+        .edu-institution {
+            font-size: 9.5pt;
+            color: #4a5568;
+        }
+        
+        /* Projects */
+        .project-entry {
+            margin-bottom: 12px;
+        }
+        
+        .project-name {
+            font-size: 10pt;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .project-description {
+            font-size: 9.5pt;
+            color: #4a5568;
+        }
+        
+        /* Certifications */
+        .cert-entry {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        
+        .cert-name {
+            font-size: 9.5pt;
+            font-weight: 500;
+        }
+        
+        .cert-issuer {
+            font-size: 9pt;
+            color: #718096;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .resume {
+                min-height: auto;
+            }
+        }
+        
+        @page {
+            size: letter;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="resume">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Contact -->
+            <div class="sidebar-section">
+                <h2>Contact</h2>
+                {% if basics.email %}
+                <div class="contact-item">
+                    <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <a href="mailto:{{ basics.email }}">{{ basics.email }}</a>
+                </div>
+                {% endif %}
+                {% if basics.phone %}
+                <div class="contact-item">
+                    <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                    <span>{{ basics.phone }}</span>
+                </div>
+                {% endif %}
+                {% if basics.location and basics.location.city %}
+                <div class="contact-item">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    <span>{{ basics.location.city }}{% if basics.location.region %}, {{ basics.location.region }}{% endif %}</span>
+                </div>
+                {% endif %}
+                {% if basics.url %}
+                <div class="contact-item">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    <a href="{{ basics.url }}">{{ basics.url | replace('https://', '') | replace('http://', '') }}</a>
+                </div>
+                {% endif %}
+                {% for profile in basics.profiles %}
+                <div class="contact-item">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    <a href="{{ profile.url or '#' }}">{{ profile.network }}</a>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Skills -->
+            {% if skills %}
+            <div class="sidebar-section">
+                <h2>Skills</h2>
+                {% for skill in skills %}
+                <div class="skill-category">
+                    <div class="skill-name">{{ skill.name }}</div>
+                    <div class="skill-keywords">
+                        {% for keyword in skill.keywords %}
+                        <span class="skill-keyword">{{ keyword }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Languages -->
+            {% if languages %}
+            <div class="sidebar-section">
+                <h2>Languages</h2>
+                {% for lang in languages %}
+                <div class="language-item">
+                    <span>{{ lang.language }}</span>
+                    <span class="language-fluency">{{ lang.fluency }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Certifications -->
+            {% if certificates %}
+            <div class="sidebar-section">
+                <h2>Certifications</h2>
+                {% for cert in certificates %}
+                <div class="language-item">
+                    <span>{{ cert.name }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Header -->
+            <header class="header">
+                <h1 class="name">{{ basics.name }}</h1>
+                {% if basics.label %}
+                <div class="label">{{ basics.label }}</div>
+                {% endif %}
+                {% if basics.summary %}
+                <p class="summary">{{ basics.summary }}</p>
+                {% endif %}
+            </header>
+            
+            <!-- Work Experience -->
+            {% if work %}
+            <section class="section">
+                <h2 class="section-title">Experience</h2>
+                {% for job in work %}
+                <div class="work-entry">
+                    <div class="work-header">
+                        <span class="work-position">{{ job.position }}</span>
+                        <span class="work-dates">{{ job.startDate | format_date }} – {{ job.endDate | format_date }}</span>
+                    </div>
+                    <div class="work-company">{{ job.name }}</div>
+                    {% if job.highlights %}
+                    <ul class="work-highlights">
+                        {% for highlight in job.highlights %}
+                        <li>{{ highlight }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </section>
+            {% endif %}
+            
+            <!-- Education -->
+            {% if education %}
+            <section class="section">
+                <h2 class="section-title">Education</h2>
+                {% for edu in education %}
+                <div class="edu-entry">
+                    <div class="edu-header">
+                        <span class="edu-degree">{{ edu.studyType }} {{ edu.area }}</span>
+                        <span class="edu-date">{{ edu.endDate | format_date }}</span>
+                    </div>
+                    <div class="edu-institution">{{ edu.institution }}</div>
+                </div>
+                {% endfor %}
+            </section>
+            {% endif %}
+            
+            <!-- Projects -->
+            {% if projects %}
+            <section class="section">
+                <h2 class="section-title">Projects</h2>
+                {% for project in projects %}
+                <div class="project-entry">
+                    <div class="project-name">{{ project.name }}</div>
+                    {% if project.description %}
+                    <div class="project-description">{{ project.description }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </section>
+            {% endif %}
+        </main>
+    </div>
+</body>
+</html>
