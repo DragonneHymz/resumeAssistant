@@ -15,7 +15,9 @@ from .models import (
     Basics,
     Certificate,
     Education,
+    Interest,
     JSONResume,
+    Language,
     Location,
     Profile,
     Project,
@@ -576,6 +578,79 @@ def add_certification(
 
 
 @mcp.tool()
+def add_language(
+    resume_id: str,
+    language: str,
+    fluency: Optional[str] = None,
+) -> dict:
+    """
+    Add a language proficiency.
+    
+    Args:
+        language: Language name (e.g., "English", "Spanish")
+        fluency: Proficiency level (e.g., "Native", "Fluent", "Intermediate")
+    """
+    storage = get_storage()
+    resume = storage.load(resume_id)
+    
+    if not resume:
+        return {"error": f"Resume not found: {resume_id}"}
+    
+    lang = Language(language=language, fluency=fluency)
+    resume.languages.append(lang)
+    storage.save(resume)
+    
+    return {
+        "success": True,
+        "index": len(resume.languages) - 1,
+        "message": f"Added language: {language}",
+    }
+
+
+@mcp.tool()
+def add_interest(
+    resume_id: str,
+    name: str,
+    keywords: list[str],
+) -> dict:
+    """
+    Add a personal interest or hobby.
+    
+    Args:
+        name: Interest name (e.g., "Photography", "Hiking")
+        keywords: List of related keywords (e.g., ["Landscape", "Portrait"])
+    """
+    storage = get_storage()
+    resume = storage.load(resume_id)
+    
+    if not resume:
+        return {"error": f"Resume not found: {resume_id}"}
+    
+    # Check if interest exists
+    for interest in resume.interests:
+        if interest.name.lower() == name.lower():
+            # Add to existing interest
+            interest.keywords.extend(keywords)
+            interest.keywords = list(set(interest.keywords))  # Dedupe
+            storage.save(resume)
+            return {
+                "success": True,
+                "message": f"Added {len(keywords)} keywords to existing interest '{name}'",
+                "total_keywords": len(interest.keywords),
+            }
+            
+    interest = Interest(name=name, keywords=keywords)
+    resume.interests.append(interest)
+    storage.save(resume)
+    
+    return {
+        "success": True,
+        "index": len(resume.interests) - 1,
+        "message": f"Added interest: {name}",
+    }
+
+
+@mcp.tool()
 def delete_entry(resume_id: str, section: str, index: int) -> dict:
     """
     Delete a specific entry from a resume section by index.
@@ -597,6 +672,8 @@ def delete_entry(resume_id: str, section: str, index: int) -> dict:
         "skills": resume.skills,
         "projects": resume.projects,
         "certificates": resume.certificates,
+        "languages": resume.languages,
+        "interests": resume.interests,
     }
     
     if section not in section_map:
