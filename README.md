@@ -7,7 +7,7 @@ An MCP (Model Context Protocol) server that helps AI agents assist users with re
 - **Resume Storage**: Store resume data using the [JSON Resume](https://jsonresume.org) open standard
 - **PDF Import**: Parse existing PDF resumes to extract structured data
 - **ATS Optimization**: Enterprise-level scoring with multi-option selection and regeneration
-- **PDF Generation**: Create professional resumes with 3 template options (Modern, Classic, Executive)
+- **Text Export**: Generate properly formatted text files for easy copy-pasting into your own templates
 
 ## Installation
 
@@ -268,11 +268,7 @@ WORKDIR /app
 
 # Install system dependencies for WeasyPrint
 RUN apt-get update && apt-get install -y \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libgdk-pixbuf2.0-0 \
-    libffi-dev \
-    shared-mime-info \
+    libffi-dev \\
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
@@ -428,7 +424,7 @@ The server provides 22+ agent skills including:
 | Import/Storage | `import_resume_from_pdf`, `store_resume`, `get_resume`, `export_json_resume` |
 | Editing | `add_work_experience`, `add_education`, `add_skill`, `add_project`, `add_certification` |
 | ATS Optimization | `score_resume`, `generate_bullet_options`, `regenerate_options`, `start_interactive_optimization` |
-| Generation | `generate_pdf`, `tailor_resume`, `list_templates` |
+| Generation | `export_text` |
 
 ## Development
 

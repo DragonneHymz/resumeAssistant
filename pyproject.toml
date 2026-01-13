@@ -13,12 +13,9 @@ keywords = ["mcp", "resume", "ats", "pdf", "json-resume"]
 dependencies = [
     "fastmcp>=2.0.0",
     "pydantic>=2.0.0",
-    "weasyprint>=60.0",
-    "jinja2>=3.0.0",
     "httpx>=0.25.0",
     "pdfplumber>=0.10.0",
     "spacy>=3.7.0",
-    "pygobject>=3.40.0",
 ]
 
 [project.optional-dependencies]

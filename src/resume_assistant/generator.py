@@ -1,52 +1,35 @@
 """
 Resume Generator Module
 
-Generates PDF resumes from JSON Resume data using HTML templates.
-Uses Jinja2 for templating and WeasyPrint for PDF conversion.
+Generates plain text resumes from JSON Resume data for easy copy-paste.
 """
 
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from jinja2 import Environment, FileSystemLoader
-
 from .models import JSONResume
 
 
 class ResumeGenerator:
-    """Generates PDF resumes from templates."""
-
-    TEMPLATES = ["modern", "classic", "executive"]
+    """Generates text resumes for easy copy-paste."""
 
     def __init__(self, output_dir: Optional[str] = None):
         """
         Initialize generator.
         
         Args:
-            output_dir: Directory to save generated PDFs.
+            output_dir: Directory to save generated files.
                         Defaults to ./output relative to package.
         """
-        # Template directory
-        package_dir = Path(__file__).parent
-        self.templates_dir = package_dir / "templates"
-        
         # Output directory
+        package_dir = Path(__file__).parent
         if output_dir is None:
             project_dir = package_dir.parent.parent
             output_dir = project_dir / "output"
         
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-
-        # Jinja2 environment
-        self.env = Environment(
-            loader=FileSystemLoader(str(self.templates_dir)),
-            autoescape=True,
-        )
-
-        # Add custom filters
-        self.env.filters["format_date"] = self._format_date
 
     @staticmethod
     def _format_date(date_str: Optional[str]) -> str:
@@ -65,99 +48,30 @@ class ResumeGenerator:
             # Return as-is if can't parse
             return date_str
 
-    def list_templates(self) -> list[dict]:
+    def generate_text(
+        self,
+        resume: JSONResume,
+        filename: Optional[str] = None,
+    ) -> str:
         """
-        List available templates with descriptions.
-        
-        Returns:
-            List of template info dicts
-        """
-        return [
-            {
-                "id": "modern",
-                "name": "Modern",
-                "description": "Clean, contemporary design with color accents. Two-column layout. Best for tech and creative roles.",
-                "features": ["Two-column layout", "Skills sidebar", "Sans-serif fonts", "Color accents"],
-            },
-            {
-                "id": "classic",
-                "name": "Classic",
-                "description": "Traditional single-column layout. Conservative styling. Maximum ATS compatibility.",
-                "features": ["Single-column", "Serif fonts", "Black and white", "Traditional headers"],
-            },
-            {
-                "id": "executive",
-                "name": "Executive",
-                "description": "Premium design with elegant typography. Strategic whitespace. Ideal for senior roles.",
-                "features": ["Premium styling", "Elegant fonts", "Strategic whitespace", "Professional borders"],
-            },
-        ]
-
-    def render_html(self, resume: JSONResume, template: str = "modern") -> str:
-        """
-        Render resume to HTML using selected template.
+        Generate a plain text resume for easy copy-paste.
         
         Args:
             resume: The resume data
-            template: Template ID (modern, classic, executive)
+            filename: Output filename (without extension)
             
         Returns:
-            HTML string
+            Absolute path to generated text file
         """
-        if template not in self.TEMPLATES:
-            template = "modern"
-
-        template_file = f"{template}.html"
+        lines = []
         
-        try:
-            tmpl = self.env.get_template(template_file)
-        except Exception:
-            # Fallback to basic rendering if template doesn't exist yet
-            return self._render_basic(resume)
-
-        # Prepare template context
-        context = {
-            "resume": resume,
-            "basics": resume.basics,
-            "work": resume.work,
-            "education": resume.education,
-            "skills": resume.skills,
-            "projects": resume.projects,
-            "certificates": resume.certificates,
-            "languages": resume.languages,
-            "now": datetime.now(),
-        }
-
-        return tmpl.render(**context)
-
-    def _render_basic(self, resume: JSONResume) -> str:
-        """Render a basic HTML resume without template file."""
-        html_parts = [
-            "<!DOCTYPE html>",
-            "<html><head>",
-            '<meta charset="utf-8">',
-            "<style>",
-            "body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; }",
-            "h1 { color: #333; margin-bottom: 5px; }",
-            "h2 { color: #555; border-bottom: 1px solid #ddd; padding-bottom: 5px; }",
-            "h3 { color: #666; margin-bottom: 5px; }",
-            ".contact { color: #666; margin-bottom: 20px; }",
-            ".section { margin-bottom: 25px; }",
-            ".entry { margin-bottom: 15px; }",
-            ".date { color: #888; font-size: 0.9em; }",
-            ".skills { display: flex; flex-wrap: wrap; gap: 10px; }",
-            ".skill-category { background: #f5f5f5; padding: 10px; border-radius: 5px; }",
-            ".skill-keywords { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }",
-            ".skill-keyword { background: #e0e0e0; padding: 2px 8px; border-radius: 3px; font-size: 0.9em; }",
-            "ul { margin-top: 5px; padding-left: 20px; }",
-            "li { margin-bottom: 3px; }",
-            "</style>",
-            "</head><body>",
-        ]
-
         # Header
-        html_parts.append(f"<h1>{resume.basics.name}</h1>")
+        lines.append("=" * 80)
+        lines.append(resume.basics.name.upper().center(80))
+        lines.append("=" * 80)
+        lines.append("")
         
+        # Contact info
         contact_parts = []
         if resume.basics.email:
             contact_parts.append(resume.basics.email)
@@ -168,129 +82,183 @@ class ResumeGenerator:
             loc_str = ", ".join(filter(None, [loc.city, loc.region]))
             if loc_str:
                 contact_parts.append(loc_str)
+        if resume.basics.url:
+            contact_parts.append(resume.basics.url)
         
         if contact_parts:
-            html_parts.append(f'<div class="contact">{" | ".join(contact_parts)}</div>')
+            lines.append(" | ".join(contact_parts))
+            lines.append("")
 
+        # Professional Summary
         if resume.basics.summary:
-            html_parts.append(f"<p>{resume.basics.summary}</p>")
+            lines.append("-" * 80)
+            lines.append("PROFESSIONAL SUMMARY")
+            lines.append("-" * 80)
+            lines.append("")
+            # Wrap summary text nicely
+            lines.append(resume.basics.summary)
+            lines.append("")
 
         # Work Experience
         if resume.work:
-            html_parts.append('<div class="section">')
-            html_parts.append("<h2>Experience</h2>")
+            lines.append("-" * 80)
+            lines.append("WORK EXPERIENCE")
+            lines.append("-" * 80)
+            lines.append("")
+            
             for work in resume.work:
-                html_parts.append('<div class="entry">')
-                html_parts.append(f"<h3>{work.position}</h3>")
+                # Position title
+                lines.append(work.position.upper())
+                
+                # Company and date range
                 date_range = f"{self._format_date(work.startDate)} - {self._format_date(work.endDate)}"
-                html_parts.append(f'<div><strong>{work.name}</strong> | <span class="date">{date_range}</span></div>')
+                lines.append(f"{work.name} | {date_range}")
+                
+                # Highlights as bullet points
                 if work.highlights:
-                    html_parts.append("<ul>")
                     for highlight in work.highlights:
-                        html_parts.append(f"<li>{highlight}</li>")
-                    html_parts.append("</ul>")
-                html_parts.append("</div>")
-            html_parts.append("</div>")
+                        lines.append(f"  • {highlight}")
+                
+                lines.append("")
 
         # Education
         if resume.education:
-            html_parts.append('<div class="section">')
-            html_parts.append("<h2>Education</h2>")
+            lines.append("-" * 80)
+            lines.append("EDUCATION")
+            lines.append("-" * 80)
+            lines.append("")
+            
             for edu in resume.education:
-                html_parts.append('<div class="entry">')
-                degree = f"{edu.studyType or ''} {edu.area or ''}".strip()
-                if degree:
-                    html_parts.append(f"<h3>{degree}</h3>")
-                html_parts.append(f"<div><strong>{edu.institution}</strong></div>")
+                # Degree
+                degree_parts = []
+                if edu.studyType:
+                    degree_parts.append(edu.studyType)
+                if edu.area:
+                    degree_parts.append(f"in {edu.area}")
+                
+                if degree_parts:
+                    lines.append(" ".join(degree_parts).upper())
+                
+                # Institution and date
+                date_str = ""
                 if edu.endDate:
-                    html_parts.append(f'<div class="date">{self._format_date(edu.endDate)}</div>')
-                html_parts.append("</div>")
-            html_parts.append("</div>")
+                    date_str = f" | Graduated {self._format_date(edu.endDate)}"
+                elif edu.startDate:
+                    date_str = f" | {self._format_date(edu.startDate)} - Present"
+                
+                lines.append(f"{edu.institution}{date_str}")
+                
+                # GPA/Score
+                if edu.score:
+                    lines.append(f"  GPA: {edu.score}")
+                
+                # Relevant courses
+                if edu.courses:
+                    lines.append(f"  Relevant Coursework: {', '.join(edu.courses)}")
+                
+                lines.append("")
 
         # Skills
         if resume.skills:
-            html_parts.append('<div class="section">')
-            html_parts.append("<h2>Skills</h2>")
-            html_parts.append('<div class="skills">')
+            lines.append("-" * 80)
+            lines.append("SKILLS")
+            lines.append("-" * 80)
+            lines.append("")
+            
             for skill in resume.skills:
-                html_parts.append('<div class="skill-category">')
-                html_parts.append(f"<strong>{skill.name}</strong>")
                 if skill.keywords:
-                    html_parts.append('<div class="skill-keywords">')
-                    for kw in skill.keywords:
-                        html_parts.append(f'<span class="skill-keyword">{kw}</span>')
-                    html_parts.append("</div>")
-                html_parts.append("</div>")
-            html_parts.append("</div>")
-            html_parts.append("</div>")
+                    lines.append(f"{skill.name}: {', '.join(skill.keywords)}")
+            
+            lines.append("")
 
         # Projects
         if resume.projects:
-            html_parts.append('<div class="section">')
-            html_parts.append("<h2>Projects</h2>")
+            lines.append("-" * 80)
+            lines.append("PROJECTS")
+            lines.append("-" * 80)
+            lines.append("")
+            
             for project in resume.projects:
-                html_parts.append('<div class="entry">')
-                html_parts.append(f"<h3>{project.name}</h3>")
+                lines.append(project.name.upper())
+                
                 if project.description:
-                    html_parts.append(f"<p>{project.description}</p>")
+                    lines.append(f"  {project.description}")
+                
+                if project.keywords:
+                    lines.append(f"  Technologies: {', '.join(project.keywords)}")
+                
                 if project.highlights:
-                    html_parts.append("<ul>")
                     for highlight in project.highlights:
-                        html_parts.append(f"<li>{highlight}</li>")
-                    html_parts.append("</ul>")
-                html_parts.append("</div>")
-            html_parts.append("</div>")
+                        lines.append(f"  • {highlight}")
+                
+                if project.url:
+                    lines.append(f"  Link: {project.url}")
+                
+                lines.append("")
 
         # Certifications
         if resume.certificates:
-            html_parts.append('<div class="section">')
-            html_parts.append("<h2>Certifications</h2>")
-            for cert in resume.certificates:
-                html_parts.append('<div class="entry">')
-                html_parts.append(f"<strong>{cert.name}</strong>")
-                if cert.issuer:
-                    html_parts.append(f" - {cert.issuer}")
-                if cert.date:
-                    html_parts.append(f' <span class="date">({self._format_date(cert.date)})</span>')
-                html_parts.append("</div>")
-            html_parts.append("</div>")
-
-        html_parts.append("</body></html>")
-        return "\n".join(html_parts)
-
-    def generate_pdf(
-        self,
-        resume: JSONResume,
-        template: str = "modern",
-        filename: Optional[str] = None,
-    ) -> str:
-        """
-        Generate a PDF resume.
-        
-        Args:
-            resume: The resume data
-            template: Template ID (modern, classic, executive)
-            filename: Output filename (without extension)
+            lines.append("-" * 80)
+            lines.append("CERTIFICATIONS")
+            lines.append("-" * 80)
+            lines.append("")
             
-        Returns:
-            Absolute path to generated PDF
-        """
-        from weasyprint import HTML
+            for cert in resume.certificates:
+                cert_line = f"  • {cert.name}"
+                if cert.issuer:
+                    cert_line += f" - {cert.issuer}"
+                if cert.date:
+                    cert_line += f" ({self._format_date(cert.date)})"
+                lines.append(cert_line)
+            
+            lines.append("")
 
-        # Generate HTML
-        html_content = self.render_html(resume, template)
+        # Languages
+        if resume.languages:
+            lines.append("-" * 80)
+            lines.append("LANGUAGES")
+            lines.append("-" * 80)
+            lines.append("")
+            
+            lang_parts = []
+            for lang in resume.languages:
+                if lang.fluency:
+                    lang_parts.append(f"{lang.language} ({lang.fluency})")
+                else:
+                    lang_parts.append(lang.language)
+            
+            lines.append(", ".join(lang_parts))
+            lines.append("")
+
+        # Interests
+        if resume.interests:
+            lines.append("-" * 80)
+            lines.append("INTERESTS")
+            lines.append("-" * 80)
+            lines.append("")
+            
+            for interest in resume.interests:
+                if interest.keywords:
+                    lines.append(f"{interest.name}: {', '.join(interest.keywords)}")
+                else:
+                    lines.append(interest.name)
+            
+            lines.append("")
+
+        # Join all lines
+        content = "\n".join(lines)
 
         # Determine output path
         if filename is None:
             safe_name = resume.basics.name.replace(" ", "_").lower()
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{safe_name}_{template}_{timestamp}"
+            filename = f"{safe_name}_resume_{timestamp}"
 
-        output_path = self.output_dir / f"{filename}.pdf"
+        output_path = self.output_dir / f"{filename}.txt"
 
-        # Generate PDF
-        html = HTML(string=html_content, base_url=str(self.templates_dir))
-        html.write_pdf(str(output_path))
+        # Write to file
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(content)
 
         return str(output_path.absolute())
 

@@ -42,7 +42,7 @@ Key Capabilities:
 - Analyze job descriptions from URLs or text
 - Score resumes using enterprise ATS methodology
 - Optimize content with multiple options for user selection
-- Generate professional PDF resumes
+- Export formatted text files for easy copy-paste into your template
 
 Always:
 1. Ask for the user's target industry first
@@ -1113,37 +1113,27 @@ async def get_next_optimization(session_id: str, skip_current: bool = False) -> 
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# RESUME GENERATION SKILLS
+# RESUME EXPORT SKILLS
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
 @mcp.tool()
-def list_templates() -> dict:
-    """
-    List available resume templates with descriptions.
-    
-    Returns template options with their features and best use cases.
-    """
-    generator = get_generator()
-    return {"templates": generator.list_templates()}
-
-
-@mcp.tool()
-async def generate_pdf(
+async def export_text(
     resume_id: str,
-    template: str = "modern",
     filename: Optional[str] = None,
 ) -> dict:
     """
-    Generate a PDF resume using the specified template.
+    Export resume as a formatted text file for easy copy-paste.
+    
+    Generates a plain text file with proper section headers, bullet points,
+    and indentation that can be easily copied into your own resume template.
     
     Args:
         resume_id: The resume's unique identifier
-        template: Template ID (modern, classic, executive)
         filename: Optional custom filename (without extension)
         
     Returns:
-        Path to the generated PDF file
+        Path to the generated text file
     """
     storage = get_storage()
     generator = get_generator()
@@ -1153,61 +1143,15 @@ async def generate_pdf(
         return {"error": f"Resume not found: {resume_id}"}
     
     try:
-        pdf_path = generator.generate_pdf(resume, template, filename)
+        text_path = generator.generate_text(resume, filename)
         return {
             "success": True,
-            "path": pdf_path,
-            "template": template,
-            "message": f"PDF generated at: {pdf_path}",
+            "path": text_path,
+            "message": f"Text file generated at: {text_path}",
         }
     except Exception as e:
         return {"error": str(e)}
 
-
-@mcp.tool()
-async def tailor_resume(resume_id: str, job_input: str, template: str = "modern") -> dict:
-    """
-    Create a tailored version of resume specifically for a job and generate PDF.
-    
-    This creates a copy of the resume optimized for the specific job:
-    - Reorders work experience by relevance
-    - Highlights most relevant skills first
-    - Adjusts summary for the role
-    
-    Returns path to the tailored PDF.
-    """
-    storage = get_storage()
-    fetcher = get_fetcher()
-    generator = get_generator()
-    
-    resume = storage.load(resume_id)
-    if not resume:
-        return {"error": f"Resume not found: {resume_id}"}
-    
-    if fetcher.is_url(job_input):
-        try:
-            result = await fetcher.fetch_url(job_input)
-            job_title = result.get("title", "job").replace(" ", "_")[:30]
-        except Exception:
-            job_title = "tailored"
-    else:
-        job_title = "tailored"
-    
-    # Generate tailored PDF
-    safe_name = resume.basics.name.replace(" ", "_").lower()
-    timestamp = datetime.now().strftime("%Y%m%d")
-    filename = f"{safe_name}_{job_title}_{timestamp}"
-    
-    try:
-        pdf_path = generator.generate_pdf(resume, template, filename)
-        return {
-            "success": True,
-            "path": pdf_path,
-            "template": template,
-            "message": f"Tailored resume generated at: {pdf_path}",
-        }
-    except Exception as e:
-        return {"error": str(e)}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1235,22 +1179,7 @@ def list_resumes() -> str:
     return "\n".join(lines)
 
 
-@mcp.resource("templates://list")
-def list_templates_resource() -> str:
-    """List available resume templates."""
-    generator = get_generator()
-    templates = generator.list_templates()
-    
-    lines = ["# Available Templates\n"]
-    for t in templates:
-        lines.append(f"## {t['name']} (`{t['id']}`)")
-        lines.append(f"{t['description']}\n")
-        lines.append("Features:")
-        for f in t['features']:
-            lines.append(f"- {f}")
-        lines.append("")
-    
-    return "\n".join(lines)
+
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1307,7 +1236,7 @@ while maintaining authenticity.
 
 5. After optimization:
    - Re-score to show improvement
-   - Offer to generate tailored PDF with generate_pdf
+   - Offer to export text file with export_text for easy copy-paste
 
 IMPORTANT:
 - Never fabricate experience
@@ -1345,7 +1274,7 @@ Conduct a comprehensive resume review focused on helping the user secure a job.
    - Present multiple options for any rewrites
    - Let user choose or regenerate
 
-6. When done, offer to generate a polished PDF
+6. When done, offer to export formatted text file with export_text
 '''
 
 
